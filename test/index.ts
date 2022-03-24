@@ -2,6 +2,7 @@ import { ethers } from 'hardhat';
 import { expect } from 'chai';
 
 import { SmartVoting } from '../typechain';
+import { BigNumber } from 'ethers';
 
 describe('SmartVoting', function() {
   let contract: SmartVoting;
@@ -422,6 +423,144 @@ describe('SmartVoting', function() {
               .to
               .be
               .revertedWith(`VM Exception while processing transaction: reverted with custom error 'VoteAlreadyFinished()'`);
+            resolve();
+          } catch (e) {
+            reject(e);
+          }
+        }, 1000);
+      });
+    });
+  });
+
+  describe('withdrawReward method', function() {
+    it('should returns reward', async function() {
+      const [owner, addr1] = await ethers.getSigners();
+      await contract
+        .addVoting(1, 'test 1', [addr1.address]);
+      await contract
+        .connect(owner)
+        .addVote(
+          0,
+          addr1.address,
+          {
+            value: ethers.utils.parseEther('0.01')
+          }
+        );
+      await contract
+        .connect(addr1)
+        .addVote(
+          0,
+          addr1.address,
+          {
+            value: ethers.utils.parseEther('0.01')
+          }
+        );
+
+      let currentBalance = await addr1.getBalance();
+      let gasUsed: BigNumber;
+      return new Promise((resolve, reject) => {
+        setTimeout(function() {
+          contract.finishVoting(0)
+            .then(() => contract.connect(addr1).withdrawReward(0))
+            .then((tx) => tx.wait())
+            .then((receipt) => {
+              gasUsed = receipt.gasUsed.mul(receipt.effectiveGasPrice);
+            })
+            .then(() => addr1.getBalance())
+            .then((newBalance) => {
+              const expectedBalance = ethers.utils
+                .parseEther('0.018').add(currentBalance).sub(gasUsed);
+              expect(newBalance).to.equal(expectedBalance);
+              resolve();
+            })
+            .catch((e) => reject(e));
+        }, 1000);
+      });
+    });
+
+    it('should returns error if voting does not exist', async function() {
+      await expect(contract.withdrawReward(1))
+        .to
+        .be
+        .revertedWith(`VM Exception while processing transaction: reverted with custom error 'VotingDoesNotExist()'`);
+    });
+
+    it('should returns error if voting hasn\'t ended', async function() {
+      const [owner, addr1] = await ethers.getSigners();
+      await contract
+        .addVoting(1, 'test 1', [addr1.address]);
+      await contract
+        .connect(owner)
+        .addVote(
+          0,
+          addr1.address,
+          {
+            value: ethers.utils.parseEther('0.01')
+          }
+        );
+
+      await expect(contract.withdrawReward(0))
+        .to
+        .be
+        .revertedWith(`VM Exception while processing transaction: reverted with reason string 'Voting hasn't ended yet.'`);
+    });
+
+    it('should returns error if reward already paid', async function() {
+      const [owner, addr1] = await ethers.getSigners();
+      await contract
+        .addVoting(1, 'test 1', [addr1.address]);
+      await contract
+        .connect(owner)
+        .addVote(
+          0,
+          addr1.address,
+          {
+            value: ethers.utils.parseEther('0.01')
+          }
+        );
+
+      return new Promise((resolve, reject) => {
+        setTimeout(async function() {
+          try {
+            await contract.finishVoting(0);
+            await contract.connect(addr1).withdrawReward(0);
+
+            await expect(contract.connect(addr1).withdrawReward(0))
+              .to
+              .be
+              .revertedWith(`VM Exception while processing transaction: reverted with reason string 'Reward already paid.'`);
+
+            resolve();
+          } catch (e) {
+            reject(e);
+          }
+        }, 1000);
+      });
+    });
+
+    it('should returns error if sender is not winner', async function() {
+      const [owner, addr1] = await ethers.getSigners();
+      await contract
+        .addVoting(1, 'test 1', [addr1.address]);
+      await contract
+        .connect(owner)
+        .addVote(
+          0,
+          addr1.address,
+          {
+            value: ethers.utils.parseEther('0.01')
+          }
+        );
+
+      return new Promise((resolve, reject) => {
+        setTimeout(async function() {
+          try {
+            await contract.finishVoting(0);
+            await expect(contract.connect(owner).withdrawReward(0))
+              .to
+              .be
+              .revertedWith(`VM Exception while processing transaction: reverted with reason string 'Only the winner can withdraw reward.'`);
+
             resolve();
           } catch (e) {
             reject(e);

@@ -50,8 +50,8 @@ contract SmartVoting {
     event VoteAdded(uint256 id, address voter, address candidate);
 
     address private owner;
-
     uint256 private currentId;
+    uint256 private availableCommission;
 
     mapping(uint256 => Voting) private votings;
 
@@ -97,6 +97,19 @@ contract SmartVoting {
             }
         }
         if (!found) revert CandidateDoesNotExist();
+        _;
+    }
+
+    modifier canWithdrawReward(uint256 _votingId) {
+        require(votings[_votingId].finished, "Voting hasn't ended yet.");
+
+        require(!votings[_votingId].rewardPaid, "Reward already paid.");
+
+        require(
+            address(votings[_votingId].winner) == msg.sender,
+            "Only the winner can withdraw reward."
+        );
+
         _;
     }
 
@@ -248,5 +261,19 @@ contract SmartVoting {
         votings[_votingId].rewardSum += msg.value;
 
         emit VoteAdded(_votingId, msg.sender, _candidate);
+    }
+
+    function withdrawReward(uint256 _votingId)
+        public
+        votingExists(_votingId)
+        canWithdrawReward(_votingId)
+    {
+        uint256 commission = 10 * (votings[_votingId].rewardSum / 100);
+        uint256 amount = votings[_votingId].rewardSum - commission;
+
+        availableCommission += commission;
+        votings[_votingId].rewardPaid = true;
+
+        payable(msg.sender).transfer(amount);
     }
 }
