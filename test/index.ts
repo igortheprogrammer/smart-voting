@@ -2,7 +2,6 @@ import { ethers } from 'hardhat';
 import { expect } from 'chai';
 
 import { SmartVoting } from '../typechain';
-import * as timers from 'timers';
 
 describe('SmartVoting', function() {
   let contract: SmartVoting;
@@ -79,6 +78,23 @@ describe('SmartVoting', function() {
     });
   });
 
+  describe('getVoting method', function() {
+    it('should returns voting', async function() {
+      const [_, addr1] = await ethers.getSigners();
+      await contract
+        .addVoting(60, 'test 1', [addr1.address]);
+      const result = await contract.getVoting(0);
+      expect(result.title).equal('test 1');
+    });
+
+    it('should returns error if voting does not exist', async function() {
+      await expect(contract.getVoting(1))
+        .to
+        .be
+        .revertedWith(`VM Exception while processing transaction: reverted with custom error 'VotingDoesNotExist()'`);
+    });
+  });
+
   describe('addVote method', function() {
     it('should add vote to voting', async function() {
       const [owner, addr1, addr2] = await ethers.getSigners();
@@ -97,6 +113,7 @@ describe('SmartVoting', function() {
 
       const result = await contract.getVotings();
       expect(result[0].votes[0].voter).equal(addr2.address);
+      expect(result[0].rewardSum).equal(ethers.utils.parseEther('0.01'));
     });
 
     it('should return error if voting does not exist', async function() {
@@ -250,168 +267,166 @@ describe('SmartVoting', function() {
       });
     });
 
-    describe('finishVoting method', function() {
-      it('should finish the voting with the random winner', async function() {
-        const signers = await ethers.getSigners();
-        const [owner, addr1, addr2, addr4, addr5] = signers;
-        await contract
-          .addVoting(
-            1,
-            'test 1',
-            [owner.address, addr1.address, addr2.address]
-          );
+    it('should finish the voting with the random winner', async function() {
+      const signers = await ethers.getSigners();
+      const [owner, addr1, addr2, addr4, addr5] = signers;
+      await contract
+        .addVoting(
+          1,
+          'test 1',
+          [owner.address, addr1.address, addr2.address]
+        );
 
-        await contract
-          .connect(owner)
-          .addVote(
-            0,
-            owner.address,
-            {
-              value: ethers.utils.parseEther('0.01')
-            }
-          );
-        await contract
-          .connect(addr5)
-          .addVote(
-            0,
-            owner.address,
-            {
-              value: ethers.utils.parseEther('0.01')
-            }
-          );
-        await contract
-          .connect(addr2)
-          .addVote(
-            0,
-            addr2.address,
-            {
-              value: ethers.utils.parseEther('0.01')
-            }
-          );
-        await contract
-          .connect(addr1)
-          .addVote(
-            0,
-            addr1.address,
-            {
-              value: ethers.utils.parseEther('0.01')
-            }
-          );
-        await contract
-          .connect(addr4)
-          .addVote(
-            0,
-            addr1.address,
-            {
-              value: ethers.utils.parseEther('0.01')
-            }
-          );
+      await contract
+        .connect(owner)
+        .addVote(
+          0,
+          owner.address,
+          {
+            value: ethers.utils.parseEther('0.01')
+          }
+        );
+      await contract
+        .connect(addr5)
+        .addVote(
+          0,
+          owner.address,
+          {
+            value: ethers.utils.parseEther('0.01')
+          }
+        );
+      await contract
+        .connect(addr2)
+        .addVote(
+          0,
+          addr2.address,
+          {
+            value: ethers.utils.parseEther('0.01')
+          }
+        );
+      await contract
+        .connect(addr1)
+        .addVote(
+          0,
+          addr1.address,
+          {
+            value: ethers.utils.parseEther('0.01')
+          }
+        );
+      await contract
+        .connect(addr4)
+        .addVote(
+          0,
+          addr1.address,
+          {
+            value: ethers.utils.parseEther('0.01')
+          }
+        );
 
-        return new Promise((resolve, reject) => {
-          setTimeout(async function() {
-            contract.finishVoting(0)
-              .then(() => contract.getVotings())
-              .then((result) => {
-                expect(result[0].finished).to.equal(true);
-                expect(signers
-                  .find(({ address }) => address === result[0].winner))
-                  .not
-                  .to
-                  .be
-                  .undefined;
-                resolve();
-              })
-              .catch((e) => reject(e));
-          }, 1000);
-        });
-      });
-
-      it('should return error if it is too early', async function() {
-        const [owner, addr1, addr2] = await ethers.getSigners();
-        await contract
-          .addVoting(
-            60,
-            'test 1',
-            [addr1.address, addr2.address]
-          );
-
-        await contract
-          .connect(owner)
-          .addVote(
-            0,
-            addr1.address,
-            {
-              value: ethers.utils.parseEther('0.01')
-            }
-          );
-        await contract
-          .connect(addr2)
-          .addVote(
-            0,
-            addr2.address,
-            {
-              value: ethers.utils.parseEther('0.01')
-            }
-          );
-
-        await expect(contract
-          .finishVoting(0))
-          .to
-          .be
-          .revertedWith(`VM Exception while processing transaction: reverted with reason string 'Voting hasn't ended yet.'`);
-      });
-
-      it('should return error if the voting is already finished', async function() {
-        const [owner, addr1, addr2] = await ethers.getSigners();
-        await contract
-          .addVoting(
-            1,
-            'test 1',
-            [addr1.address, addr2.address]
-          );
-
-        await contract
-          .connect(owner)
-          .addVote(
-            0,
-            addr1.address,
-            {
-              value: ethers.utils.parseEther('0.01')
-            }
-          );
-        await contract
-          .connect(addr1)
-          .addVote(
-            0,
-            addr1.address,
-            {
-              value: ethers.utils.parseEther('0.01')
-            }
-          );
-        await contract
-          .connect(addr2)
-          .addVote(
-            0,
-            addr2.address,
-            {
-              value: ethers.utils.parseEther('0.01')
-            }
-          );
-
-        return new Promise((resolve, reject) => {
-          setTimeout(async function() {
-            try {
-              await contract.finishVoting(0);
-              await expect(contract.finishVoting(0))
+      return new Promise((resolve, reject) => {
+        setTimeout(async function() {
+          contract.finishVoting(0)
+            .then(() => contract.getVotings())
+            .then((result) => {
+              expect(result[0].finished).to.equal(true);
+              expect(signers
+                .find(({ address }) => address === result[0].winner))
+                .not
                 .to
                 .be
-                .revertedWith(`VM Exception while processing transaction: reverted with custom error 'VoteAlreadyFinished()'`);
+                .undefined;
               resolve();
-            } catch (e) {
-              reject(e);
-            }
-          }, 1000);
-        });
+            })
+            .catch((e) => reject(e));
+        }, 1000);
+      });
+    });
+
+    it('should return error if it is too early', async function() {
+      const [owner, addr1, addr2] = await ethers.getSigners();
+      await contract
+        .addVoting(
+          60,
+          'test 1',
+          [addr1.address, addr2.address]
+        );
+
+      await contract
+        .connect(owner)
+        .addVote(
+          0,
+          addr1.address,
+          {
+            value: ethers.utils.parseEther('0.01')
+          }
+        );
+      await contract
+        .connect(addr2)
+        .addVote(
+          0,
+          addr2.address,
+          {
+            value: ethers.utils.parseEther('0.01')
+          }
+        );
+
+      await expect(contract
+        .finishVoting(0))
+        .to
+        .be
+        .revertedWith(`VM Exception while processing transaction: reverted with reason string 'Voting hasn't ended yet.'`);
+    });
+
+    it('should return error if the voting is already finished', async function() {
+      const [owner, addr1, addr2] = await ethers.getSigners();
+      await contract
+        .addVoting(
+          1,
+          'test 1',
+          [addr1.address, addr2.address]
+        );
+
+      await contract
+        .connect(owner)
+        .addVote(
+          0,
+          addr1.address,
+          {
+            value: ethers.utils.parseEther('0.01')
+          }
+        );
+      await contract
+        .connect(addr1)
+        .addVote(
+          0,
+          addr1.address,
+          {
+            value: ethers.utils.parseEther('0.01')
+          }
+        );
+      await contract
+        .connect(addr2)
+        .addVote(
+          0,
+          addr2.address,
+          {
+            value: ethers.utils.parseEther('0.01')
+          }
+        );
+
+      return new Promise((resolve, reject) => {
+        setTimeout(async function() {
+          try {
+            await contract.finishVoting(0);
+            await expect(contract.finishVoting(0))
+              .to
+              .be
+              .revertedWith(`VM Exception while processing transaction: reverted with custom error 'VoteAlreadyFinished()'`);
+            resolve();
+          } catch (e) {
+            reject(e);
+          }
+        }, 1000);
       });
     });
   });

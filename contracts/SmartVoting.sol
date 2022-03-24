@@ -1,8 +1,6 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "hardhat/console.sol";
-
 contract SmartVoting {
     struct Vote {
         address candidate;
@@ -14,6 +12,8 @@ contract SmartVoting {
         string title;
         uint256 endTime;
         bool finished;
+        uint256 rewardSum;
+        bool rewardPaid;
         address winner;
         address[] candidates;
         Vote[] votes;
@@ -26,6 +26,8 @@ contract SmartVoting {
         string title;
         uint256 endTime;
         bool finished;
+        uint256 rewardSum;
+        bool rewardPaid;
         address[] candidates;
         address winner;
         Vote[] votes;
@@ -106,7 +108,7 @@ contract SmartVoting {
         uint256 _duration,
         string memory _title,
         address[] memory _candidates
-    ) external onlyOwner {
+    ) public onlyOwner {
         require(
             keccak256(abi.encodePacked(_title)) !=
                 keccak256(abi.encodePacked("")),
@@ -136,6 +138,8 @@ contract SmartVoting {
                 title: votings[i].title,
                 endTime: votings[i].endTime,
                 finished: votings[i].finished,
+                rewardSum: votings[i].rewardSum,
+                rewardPaid: votings[i].rewardPaid,
                 winner: votings[i].winner,
                 candidates: votings[i].candidates,
                 votes: votings[i].votes
@@ -144,8 +148,28 @@ contract SmartVoting {
         return res;
     }
 
+    function getVoting(uint256 _votingId)
+        public
+        view
+        votingExists(_votingId)
+        returns (VotingStats memory)
+    {
+        return
+            VotingStats({
+                id: votings[_votingId].id,
+                title: votings[_votingId].title,
+                endTime: votings[_votingId].endTime,
+                finished: votings[_votingId].finished,
+                rewardSum: votings[_votingId].rewardSum,
+                rewardPaid: votings[_votingId].rewardPaid,
+                winner: votings[_votingId].winner,
+                candidates: votings[_votingId].candidates,
+                votes: votings[_votingId].votes
+            });
+    }
+
     function finishVoting(uint256 _votingId)
-        external
+        public
         votingExists(_votingId)
         votingIsActive(_votingId)
     {
@@ -206,13 +230,13 @@ contract SmartVoting {
     }
 
     function addVote(uint256 _votingId, address _candidate)
-        external
+        public
         payable
         votingExists(_votingId)
         votingIsActive(_votingId)
         candidateExists(_votingId, _candidate)
     {
-        if (msg.value != 10000000 gwei) revert IncorrectBid();
+        if (msg.value != 10000000000000000 wei) revert IncorrectBid();
 
         if (votings[_votingId].voters[msg.sender]) revert VoteAlreadyCounted();
 
@@ -221,6 +245,7 @@ contract SmartVoting {
             Vote({candidate: _candidate, voter: msg.sender})
         );
         votings[_votingId].candidateVotes[_candidate].push(msg.sender);
+        votings[_votingId].rewardSum += msg.value;
 
         emit VoteAdded(_votingId, msg.sender, _candidate);
     }
