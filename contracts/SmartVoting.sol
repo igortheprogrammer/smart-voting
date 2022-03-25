@@ -280,4 +280,14 @@ contract SmartVoting {
     function getCommission() public view onlyOwner returns (uint256) {
         return availableCommission;
     }
+
+    function withdrawCommission()
+        public
+        onlyOwner
+    {
+        uint256 amount = availableCommission;
+        availableCommission = 0;
+
+        payable(msg.sender).transfer(amount);
+    }
 }

@@ -433,7 +433,7 @@ describe('SmartVoting', function() {
   });
 
   describe('withdrawReward method', function() {
-    it('should returns reward', async function() {
+    it('should withdraw reward', async function() {
       const [owner, addr1] = await ethers.getSigners();
       await contract
         .addVoting(1, 'test 1', [addr1.address]);
@@ -615,6 +615,60 @@ describe('SmartVoting', function() {
     it('should returns error if not owner', async function() {
       const [_, addr1] = await ethers.getSigners();
       await expect(contract.connect(addr1).getCommission())
+        .to
+        .be
+        .revertedWith(`VM Exception while processing transaction: reverted with custom error 'NotOwner()'`);
+    });
+  });
+
+  describe('withdrawCommission method', function() {
+    it('should withdraw commission', async function() {
+      const [owner, addr1] = await ethers.getSigners();
+      await contract
+        .addVoting(1, 'test 1', [addr1.address]);
+      await contract
+        .connect(owner)
+        .addVote(
+          0,
+          addr1.address,
+          {
+            value: ethers.utils.parseEther('0.01')
+          }
+        );
+      await contract
+        .connect(addr1)
+        .addVote(
+          0,
+          addr1.address,
+          {
+            value: ethers.utils.parseEther('0.01')
+          }
+        );
+
+      let currentBalance = await owner.getBalance();
+      return new Promise((resolve, reject) => {
+        setTimeout(async function() {
+          try {
+            await contract.connect(addr1).finishVoting(0);
+            await contract.connect(addr1).withdrawReward(0);
+            const tx = await contract.withdrawCommission();
+            const receipt = await tx.wait();
+            const gasUsed = receipt.gasUsed.mul(receipt.effectiveGasPrice);
+            const expectedBalance = ethers.utils
+              .parseEther('0.002').add(currentBalance).sub(gasUsed);
+            const newBalance = await owner.getBalance();
+            expect(newBalance).to.equal(expectedBalance);
+            resolve();
+          } catch (e) {
+            reject(e);
+          }
+        }, 1000);
+      });
+    });
+
+    it('should returns error if not owner', async function() {
+      const [_, addr1] = await ethers.getSigners();
+      await expect(contract.connect(addr1).withdrawCommission())
         .to
         .be
         .revertedWith(`VM Exception while processing transaction: reverted with custom error 'NotOwner()'`);
