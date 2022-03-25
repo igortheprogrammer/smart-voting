@@ -569,4 +569,55 @@ describe('SmartVoting', function() {
       });
     });
   });
+
+  describe('getCommission method', function() {
+    it('should returns available commission', async function() {
+      const [owner, addr1] = await ethers.getSigners();
+      await contract
+        .addVoting(1, 'test 1', [addr1.address]);
+      await contract
+        .connect(owner)
+        .addVote(
+          0,
+          addr1.address,
+          {
+            value: ethers.utils.parseEther('0.01')
+          }
+        );
+      await contract
+        .connect(addr1)
+        .addVote(
+          0,
+          addr1.address,
+          {
+            value: ethers.utils.parseEther('0.01')
+          }
+        );
+
+
+      return new Promise((resolve, reject) => {
+        setTimeout(async function() {
+          try {
+            await contract.finishVoting(0);
+            await contract.connect(addr1).withdrawReward(0);
+            const expectedCommission = ethers.utils
+              .parseEther('0.002');
+            const commission = await contract.getCommission();
+            expect(commission).equal(expectedCommission);
+            resolve();
+          } catch (e) {
+            reject(e);
+          }
+        }, 1000);
+      });
+    });
+
+    it('should returns error if not owner', async function() {
+      const [_, addr1] = await ethers.getSigners();
+      await expect(contract.connect(addr1).getCommission())
+        .to
+        .be
+        .revertedWith(`VM Exception while processing transaction: reverted with custom error 'NotOwner()'`);
+    });
+  });
 });

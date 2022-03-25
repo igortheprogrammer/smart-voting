@@ -276,4 +276,8 @@ contract SmartVoting {
 
         payable(msg.sender).transfer(amount);
     }
+
+    function getCommission() public view onlyOwner returns (uint256) {
+        return availableCommission;
+    }
 }
