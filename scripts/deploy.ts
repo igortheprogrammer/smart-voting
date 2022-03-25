@@ -1,12 +1,12 @@
-import { ethers } from "hardhat";
+import { ethers } from 'hardhat';
 
 async function main() {
-  const SmartVoting = await ethers.getContractFactory("SmartVoting");
+  const SmartVoting = await ethers.getContractFactory('SmartVoting');
   const smartVoting = await SmartVoting.deploy();
 
   await smartVoting.deployed();
 
-  console.log("SmartVoting deployed to:", smartVoting.address);
+  console.log('SmartVoting deployed to:', smartVoting.address);
 }
 
 main()

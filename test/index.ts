@@ -1,8 +1,8 @@
 import { ethers } from 'hardhat';
 import { expect } from 'chai';
+import { BigNumber } from 'ethers';
 
 import { SmartVoting } from '../typechain';
-import { BigNumber } from 'ethers';
 
 describe('SmartVoting', function() {
   let contract: SmartVoting;
