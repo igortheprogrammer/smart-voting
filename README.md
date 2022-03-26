@@ -46,10 +46,10 @@ hardhat finish-voting --voting 0
 
 - `add-vote` - добавляет голос за кандидата. Принимает параметры: `voter` (адрес
   аккаунта, с которого будет засчитан голос), `voting` (идентификатор
-  голосования) и `candidate` (адрес кандидатов).
+  голосования) и `candidate` (идентификатор кандидата).
 
 ```
-hardhat add-vote --voter 0x70997970c51812dc3a010c7d01b50e0d17dc79c8 --voting 0 --candidate 0x70997970C51812dc3A010C7d01b50e0d17dc79C8
+hardhat add-vote --voter 0x70997970c51812dc3a010c7d01b50e0d17dc79c8 --voting 0 --candidate 0
 ```
 
 - `withdraw-reward` - выводит вознаграждение победителю. Принимает

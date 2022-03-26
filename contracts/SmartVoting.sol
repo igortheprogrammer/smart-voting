@@ -15,8 +15,9 @@ contract SmartVoting {
         uint256 rewardSum;
         bool rewardPaid;
         address winner;
-        address[] candidates;
         Vote[] votes;
+        uint256 candidatesCount;
+        mapping(uint256 => address) candidates;
         mapping(address => address[]) candidateVotes;
         mapping(address => bool) voters;
     }
@@ -88,15 +89,9 @@ contract SmartVoting {
         _;
     }
 
-    modifier candidateExists(uint256 _votingId, address _candidate) {
-        bool found = false;
-        for (uint256 i = 0; i < votings[_votingId].candidates.length; i++) {
-            if (votings[_votingId].candidates[i] == _candidate) {
-                found = true;
-                break;
-            }
-        }
-        if (!found) revert CandidateDoesNotExist();
+    modifier candidateExists(uint256 _votingId, uint256 _candidateId) {
+        if (votings[_votingId].candidatesCount - 1 < _candidateId)
+            revert CandidateDoesNotExist();
         _;
     }
 
@@ -136,11 +131,28 @@ contract SmartVoting {
         v.title = _title;
         v.endTime = endTime;
         v.finished = false;
-        v.candidates = _candidates;
+        v.candidatesCount = _candidates.length;
+        for (uint256 i = 0; i < _candidates.length; i++) {
+            v.candidates[i] = _candidates[i];
+        }
 
         emit VotingAdded(currentId, _title, endTime, _candidates);
 
         currentId++;
+    }
+
+    function getVotingCandidates(uint256 _votingId)
+        private
+        view
+        returns (address[] memory)
+    {
+        address[] memory candidates = new address[](
+            votings[_votingId].candidatesCount
+        );
+        for (uint256 i = 0; i < votings[_votingId].candidatesCount; i++) {
+            candidates[i] = votings[_votingId].candidates[i];
+        }
+        return candidates;
     }
 
     function getVotings() public view returns (VotingStats[] memory) {
@@ -154,7 +166,7 @@ contract SmartVoting {
                 rewardSum: votings[i].rewardSum,
                 rewardPaid: votings[i].rewardPaid,
                 winner: votings[i].winner,
-                candidates: votings[i].candidates,
+                candidates: getVotingCandidates(i),
                 votes: votings[i].votes
             });
         }
@@ -176,7 +188,7 @@ contract SmartVoting {
                 rewardSum: votings[_votingId].rewardSum,
                 rewardPaid: votings[_votingId].rewardPaid,
                 winner: votings[_votingId].winner,
-                candidates: votings[_votingId].candidates,
+                candidates: getVotingCandidates(_votingId),
                 votes: votings[_votingId].votes
             });
     }
@@ -196,7 +208,7 @@ contract SmartVoting {
             .candidateVotes[currentCandidate]
             .length;
         uint256 num = 1;
-        for (uint256 i = 1; i < votings[_votingId].candidates.length; i++) {
+        for (uint256 i = 1; i < votings[_votingId].candidatesCount; i++) {
             currentCandidate = votings[_votingId].candidates[i];
             if (
                 votings[_votingId].candidateVotes[currentCandidate].length >
@@ -216,7 +228,7 @@ contract SmartVoting {
 
         address[] memory leaders = new address[](num);
         uint256 pos = 0;
-        for (uint256 i = 0; i < votings[_votingId].candidates.length; i++) {
+        for (uint256 i = 0; i < votings[_votingId].candidatesCount; i++) {
             currentCandidate = votings[_votingId].candidates[i];
             if (
                 votings[_votingId].candidateVotes[currentCandidate].length ==
@@ -242,12 +254,12 @@ contract SmartVoting {
         );
     }
 
-    function addVote(uint256 _votingId, address _candidate)
+    function addVote(uint256 _votingId, uint256 _candidateId)
         public
         payable
         votingExists(_votingId)
         votingIsActive(_votingId)
-        candidateExists(_votingId, _candidate)
+        candidateExists(_votingId, _candidateId)
     {
         if (msg.value != 10000000000000000 wei) revert IncorrectBid();
 
@@ -255,12 +267,21 @@ contract SmartVoting {
 
         votings[_votingId].voters[msg.sender] = true;
         votings[_votingId].votes.push(
-            Vote({candidate: _candidate, voter: msg.sender})
+            Vote({
+                candidate: votings[_votingId].candidates[_candidateId],
+                voter: msg.sender
+            })
         );
-        votings[_votingId].candidateVotes[_candidate].push(msg.sender);
+        votings[_votingId]
+            .candidateVotes[votings[_votingId].candidates[_candidateId]]
+            .push(msg.sender);
         votings[_votingId].rewardSum += msg.value;
 
-        emit VoteAdded(_votingId, msg.sender, _candidate);
+        emit VoteAdded(
+            _votingId,
+            msg.sender,
+            votings[_votingId].candidates[_candidateId]
+        );
     }
 
     function withdrawReward(uint256 _votingId)
@@ -281,10 +302,7 @@ contract SmartVoting {
         return availableCommission;
     }
 
-    function withdrawCommission()
-        public
-        onlyOwner
-    {
+    function withdrawCommission() public onlyOwner {
         uint256 amount = availableCommission;
         availableCommission = 0;
 

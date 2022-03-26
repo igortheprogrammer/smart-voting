@@ -106,7 +106,7 @@ describe('SmartVoting', function() {
         .connect(addr2)
         .addVote(
           0,
-          addr1.address,
+          1,
           {
             value: ethers.utils.parseEther('0.01')
           }
@@ -161,7 +161,7 @@ describe('SmartVoting', function() {
         .connect(addr2)
         .addVote(
           0,
-          addr1.address,
+          1,
           {
             value: ethers.utils.parseEther('0.001')
           }
@@ -180,7 +180,7 @@ describe('SmartVoting', function() {
         .connect(addr2)
         .addVote(
           0,
-          addr1.address,
+          1,
           {
             value: ethers.utils.parseEther('0.01')
           }
@@ -190,7 +190,7 @@ describe('SmartVoting', function() {
         .connect(addr2)
         .addVote(
           0,
-          addr1.address,
+          1,
           {
             value: ethers.utils.parseEther('0.01')
           }
@@ -221,7 +221,7 @@ describe('SmartVoting', function() {
         .connect(owner)
         .addVote(
           0,
-          owner.address,
+          0,
           {
             value: ethers.utils.parseEther('0.01')
           }
@@ -230,7 +230,7 @@ describe('SmartVoting', function() {
         .connect(addr2)
         .addVote(
           0,
-          addr2.address,
+          2,
           {
             value: ethers.utils.parseEther('0.01')
           }
@@ -239,7 +239,7 @@ describe('SmartVoting', function() {
         .connect(addr1)
         .addVote(
           0,
-          addr1.address,
+          1,
           {
             value: ethers.utils.parseEther('0.01')
           }
@@ -248,7 +248,7 @@ describe('SmartVoting', function() {
         .connect(addr4)
         .addVote(
           0,
-          addr1.address,
+          1,
           {
             value: ethers.utils.parseEther('0.01')
           }
@@ -282,7 +282,7 @@ describe('SmartVoting', function() {
         .connect(owner)
         .addVote(
           0,
-          owner.address,
+          0,
           {
             value: ethers.utils.parseEther('0.01')
           }
@@ -291,7 +291,7 @@ describe('SmartVoting', function() {
         .connect(addr5)
         .addVote(
           0,
-          owner.address,
+          0,
           {
             value: ethers.utils.parseEther('0.01')
           }
@@ -300,7 +300,7 @@ describe('SmartVoting', function() {
         .connect(addr2)
         .addVote(
           0,
-          addr2.address,
+          2,
           {
             value: ethers.utils.parseEther('0.01')
           }
@@ -309,7 +309,7 @@ describe('SmartVoting', function() {
         .connect(addr1)
         .addVote(
           0,
-          addr1.address,
+          1,
           {
             value: ethers.utils.parseEther('0.01')
           }
@@ -318,7 +318,7 @@ describe('SmartVoting', function() {
         .connect(addr4)
         .addVote(
           0,
-          addr1.address,
+          1,
           {
             value: ethers.utils.parseEther('0.01')
           }
@@ -356,7 +356,7 @@ describe('SmartVoting', function() {
         .connect(owner)
         .addVote(
           0,
-          addr1.address,
+          0,
           {
             value: ethers.utils.parseEther('0.01')
           }
@@ -365,7 +365,7 @@ describe('SmartVoting', function() {
         .connect(addr2)
         .addVote(
           0,
-          addr2.address,
+          1,
           {
             value: ethers.utils.parseEther('0.01')
           }
@@ -391,7 +391,7 @@ describe('SmartVoting', function() {
         .connect(owner)
         .addVote(
           0,
-          addr1.address,
+          0,
           {
             value: ethers.utils.parseEther('0.01')
           }
@@ -400,7 +400,7 @@ describe('SmartVoting', function() {
         .connect(addr1)
         .addVote(
           0,
-          addr1.address,
+          0,
           {
             value: ethers.utils.parseEther('0.01')
           }
@@ -409,7 +409,7 @@ describe('SmartVoting', function() {
         .connect(addr2)
         .addVote(
           0,
-          addr2.address,
+          1,
           {
             value: ethers.utils.parseEther('0.01')
           }
@@ -441,7 +441,7 @@ describe('SmartVoting', function() {
         .connect(owner)
         .addVote(
           0,
-          addr1.address,
+          0,
           {
             value: ethers.utils.parseEther('0.01')
           }
@@ -450,7 +450,7 @@ describe('SmartVoting', function() {
         .connect(addr1)
         .addVote(
           0,
-          addr1.address,
+          0,
           {
             value: ethers.utils.parseEther('0.01')
           }
@@ -493,7 +493,7 @@ describe('SmartVoting', function() {
         .connect(owner)
         .addVote(
           0,
-          addr1.address,
+          0,
           {
             value: ethers.utils.parseEther('0.01')
           }
@@ -513,7 +513,7 @@ describe('SmartVoting', function() {
         .connect(owner)
         .addVote(
           0,
-          addr1.address,
+          0,
           {
             value: ethers.utils.parseEther('0.01')
           }
@@ -546,7 +546,7 @@ describe('SmartVoting', function() {
         .connect(owner)
         .addVote(
           0,
-          addr1.address,
+          0,
           {
             value: ethers.utils.parseEther('0.01')
           }
@@ -579,7 +579,7 @@ describe('SmartVoting', function() {
         .connect(owner)
         .addVote(
           0,
-          addr1.address,
+          0,
           {
             value: ethers.utils.parseEther('0.01')
           }
@@ -588,7 +588,7 @@ describe('SmartVoting', function() {
         .connect(addr1)
         .addVote(
           0,
-          addr1.address,
+          0,
           {
             value: ethers.utils.parseEther('0.01')
           }
@@ -630,7 +630,7 @@ describe('SmartVoting', function() {
         .connect(owner)
         .addVote(
           0,
-          addr1.address,
+          0,
           {
             value: ethers.utils.parseEther('0.01')
           }
@@ -639,7 +639,7 @@ describe('SmartVoting', function() {
         .connect(addr1)
         .addVote(
           0,
-          addr1.address,
+          0,
           {
             value: ethers.utils.parseEther('0.01')
           }

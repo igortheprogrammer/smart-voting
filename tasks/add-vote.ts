@@ -16,9 +16,9 @@ export default task('add-vote', 'Add vote to voting')
   )
   .addParam(
     'candidate',
-    'The candidate',
+    'The candidate identifier',
     false,
-    types.string
+    types.int
   )
   .setAction(async ({ voter, voting, candidate }, hre) => {
     if (!process.env.CONTRACT_ADDRESS) {
