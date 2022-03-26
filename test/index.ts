@@ -66,7 +66,7 @@ describe('SmartVoting', function() {
   });
 
   describe('getVotings method', function() {
-    it('should returns votings with candidates', async function() {
+    it('should return votings with candidates', async function() {
       const [owner, addr1, addr2] = await ethers.getSigners();
       await contract.addVoting(60, 'test 1', [addr1.address]);
       await contract.addVoting(60, 'test 2', [addr2.address]);
@@ -80,7 +80,7 @@ describe('SmartVoting', function() {
   });
 
   describe('getVoting method', function() {
-    it('should returns voting', async function() {
+    it('should return voting', async function() {
       const [_, addr1] = await ethers.getSigners();
       await contract
         .addVoting(60, 'test 1', [addr1.address]);
@@ -88,7 +88,7 @@ describe('SmartVoting', function() {
       expect(result.title).equal('test 1');
     });
 
-    it('should returns error if voting does not exist', async function() {
+    it('should return error if voting does not exist', async function() {
       await expect(contract.getVoting(1))
         .to
         .be
@@ -171,7 +171,7 @@ describe('SmartVoting', function() {
         .revertedWith(`VM Exception while processing transaction: reverted with custom error 'IncorrectBid()'`);
     });
 
-    it('should return error if vote already counted', async function() {
+    it('should return error if vote is already counted', async function() {
       const [owner, addr1, addr2] = await ethers.getSigners();
       await contract
         .addVoting(60, 'test 1', [owner.address, addr1.address]);
@@ -478,14 +478,14 @@ describe('SmartVoting', function() {
       });
     });
 
-    it('should returns error if voting does not exist', async function() {
+    it('should return error if voting does not exist', async function() {
       await expect(contract.withdrawReward(1))
         .to
         .be
         .revertedWith(`VM Exception while processing transaction: reverted with custom error 'VotingDoesNotExist()'`);
     });
 
-    it('should returns error if voting hasn\'t ended', async function() {
+    it('should return error if voting hasn\'t ended', async function() {
       const [owner, addr1] = await ethers.getSigners();
       await contract
         .addVoting(1, 'test 1', [addr1.address]);
@@ -505,7 +505,7 @@ describe('SmartVoting', function() {
         .revertedWith(`VM Exception while processing transaction: reverted with reason string 'Voting hasn't ended yet.'`);
     });
 
-    it('should returns error if reward already paid', async function() {
+    it('should return error if reward is already paid', async function() {
       const [owner, addr1] = await ethers.getSigners();
       await contract
         .addVoting(1, 'test 1', [addr1.address]);
@@ -528,7 +528,7 @@ describe('SmartVoting', function() {
             await expect(contract.connect(addr1).withdrawReward(0))
               .to
               .be
-              .revertedWith(`VM Exception while processing transaction: reverted with reason string 'Reward already paid.'`);
+              .revertedWith(`VM Exception while processing transaction: reverted with reason string 'Reward is already paid.'`);
 
             resolve();
           } catch (e) {
@@ -538,7 +538,7 @@ describe('SmartVoting', function() {
       });
     });
 
-    it('should returns error if sender is not winner', async function() {
+    it('should return error if sender is not winner', async function() {
       const [owner, addr1] = await ethers.getSigners();
       await contract
         .addVoting(1, 'test 1', [addr1.address]);
@@ -571,7 +571,7 @@ describe('SmartVoting', function() {
   });
 
   describe('getCommission method', function() {
-    it('should returns available commission', async function() {
+    it('should return available commission', async function() {
       const [owner, addr1] = await ethers.getSigners();
       await contract
         .addVoting(1, 'test 1', [addr1.address]);
@@ -612,7 +612,7 @@ describe('SmartVoting', function() {
       });
     });
 
-    it('should returns error if not owner', async function() {
+    it('should return error if not owner', async function() {
       const [_, addr1] = await ethers.getSigners();
       await expect(contract.connect(addr1).getCommission())
         .to
@@ -666,7 +666,7 @@ describe('SmartVoting', function() {
       });
     });
 
-    it('should returns error if not owner', async function() {
+    it('should return error if not owner', async function() {
       const [_, addr1] = await ethers.getSigners();
       await expect(contract.connect(addr1).withdrawCommission())
         .to

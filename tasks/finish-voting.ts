@@ -1,26 +1,14 @@
 import { task, types } from 'hardhat/config';
 import '@nomiclabs/hardhat-waffle';
 
-export default task('add-voting', 'Add new voting')
+export default task('finish-voting', 'Change voting as finished')
   .addParam(
-    'duration',
-    'The voting duration in seconds',
+    'voting',
+    'The voting identifier',
     '',
     types.int
   )
-  .addParam(
-    'title',
-    'The voting title',
-    '',
-    types.string
-  )
-  .addParam(
-    'candidates',
-    'Comma separated list of addresses',
-    '',
-    types.string
-  )
-  .setAction(async ({ duration, title, candidates }, hre) => {
+  .setAction(async ({ voting }, hre) => {
     if (!process.env.CONTRACT_ADDRESS) {
       console.error('CONTRACT_ADDRESS is required!');
       return;
@@ -34,11 +22,7 @@ export default task('add-voting', 'Add new voting')
       owner
     );
 
-    const result = await contract.addVoting(
-      duration,
-      title.trim(),
-      candidates.split(',')
-    );
+    const result = await contract.finishVoting(voting);
 
     console.log(result);
   });

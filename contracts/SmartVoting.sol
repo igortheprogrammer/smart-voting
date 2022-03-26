@@ -61,13 +61,13 @@ contract SmartVoting {
     /// Voting does not exist.
     error VotingDoesNotExist();
 
-    /// This voting already finished.
+    /// This voting is already finished.
     error VoteAlreadyFinished();
 
     /// Candidate does not exist.
     error CandidateDoesNotExist();
 
-    /// This vote already counted at voting.
+    /// This vote is already counted at voting.
     error VoteAlreadyCounted();
 
     /// Correct bid is 0.01 ETH.
@@ -103,7 +103,7 @@ contract SmartVoting {
     modifier canWithdrawReward(uint256 _votingId) {
         require(votings[_votingId].finished, "Voting hasn't ended yet.");
 
-        require(!votings[_votingId].rewardPaid, "Reward already paid.");
+        require(!votings[_votingId].rewardPaid, "Reward is already paid.");
 
         require(
             address(votings[_votingId].winner) == msg.sender,
